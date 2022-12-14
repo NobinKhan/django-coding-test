@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "django-coding-test"
+version = "1.0.0"
+description = "backend part of this project"
+authors = ["Md. Nazrul Islam Khan <nazrulkhan.dk@gmail.com>"]
+license = "private"
+readme = "README.md"
+packages = [{include = "django_coding_test"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.1.4"
+python-dotenv = "^0.21.0"
+django-extensions = "^3.2.1"
+djangorestframework = "^3.14.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

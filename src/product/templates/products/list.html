@@ -11,15 +11,20 @@
 
 
     <div class="card">
-        <form action="" method="get" class="card-header">
+        <form action="{% url 'product:list.product' %}" method="get" class="card-header">
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
                     <input type="text" name="title" placeholder="Product Title" class="form-control">
                 </div>
                 <div class="col-md-2">
-                    <select name="variant" id="" class="form-control">
+                    <select name="variant" id="variant" class="form-control">
                         <option selected disabled>--Select A Variant--</option>
-
+                    {% for varient in varients %}
+                        <option disabled >{{ varient.title }}</option>
+                        {% for pv in varient.productvariant_set.all %}
+                            <option value="{{ pv.variant_title }}">{{ pv.variant_title }}</option>
+                        {% endfor %}
+                    {% endfor %}
                     </select>
                 </div>
 

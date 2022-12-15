@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.core.exceptions import ValidationError
 from django.views.generic import TemplateView, ListView
 
 from rest_framework import status
@@ -58,27 +57,30 @@ class CreateProduct(APIView):
     def post(self, request, formate=None):
         data = request.data
         
+        # product data
         product = data.pop('product')
         productSZ = Product(**product)
         try:
             productSZ.clean()
-        except ValidationError as msg :
-            return Response(msg, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except Exception as msg :
+            return Response({"error":msg.args[0]}, status=status.HTTP_406_NOT_ACCEPTABLE)
         
+        # image data
         productImage = data.pop('product_image')
         productImageSZ = ProductImage(file_path=productImage, thumbnail=1, product=productSZ)
         try:
             productImageSZ.clean()
-        except ValidationError as msg :
-            return Response(msg, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except Exception as msg :
+            return Response({"error":msg.args[0]}, status=status.HTTP_406_NOT_ACCEPTABLE)
         
+        # varients data
         if data.get('product_variants'):
             for pv in data.get('product_variants'):
                 pv_one = pv.get('product_variant_one')
                 if pv_one:
                     varient = get_object_or_None(Variant, title=pv_one.get('variant'))
                     if not varient:
-                        return Response("varient object not found", status=status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response({"error":"varient object not found"}, status=status.HTTP_406_NOT_ACCEPTABLE)
                     pv_one = ProductVariant(
                         variant_title = pv_one.get('variant_title'),
                         variant = varient,
@@ -89,7 +91,7 @@ class CreateProduct(APIView):
                 if pv_two:
                     varient = get_object_or_None(Variant, title=pv_two.get('variant'))
                     if not varient:
-                        return Response("varient object not found", status=status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response({"error":"varient object not found"}, status=status.HTTP_406_NOT_ACCEPTABLE)
                     pv_two = ProductVariant(
                         variant_title = pv_two.get('variant_title'),
                         variant = varient,
@@ -100,7 +102,7 @@ class CreateProduct(APIView):
                 if pv_three:
                     varient = get_object_or_None(Variant, title=pv_three.get('variant'))
                     if not varient:
-                        return Response("varient object not found", status=status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response({"error":"varient object not found"}, status=status.HTTP_406_NOT_ACCEPTABLE)
                     pv_three = ProductVariant(
                         variant_title = pv_three.get('variant_title'),
                         variant = varient,
@@ -113,7 +115,7 @@ class CreateProduct(APIView):
                     price = int(price)
                     stock = int(stock)
                 except:
-                    return Response("Inavlid price or stock data, only int value acceptable", status=status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response({"error":"Inavlid price or stock data, only int value acceptable"}, status=status.HTTP_406_NOT_ACCEPTABLE)
                 
                 product_varient_price = ProductVariantPrice(
                     product_variant_one = pv_one,
@@ -125,20 +127,70 @@ class CreateProduct(APIView):
                 )
                 try:
                     product_varient_price.clean()
-                except ValidationError as msg :
-                    return Response(msg, status=status.HTTP_406_NOT_ACCEPTABLE)
+                except Exception as msg :
+                    return Response({"error":msg.args[0]}, status=status.HTTP_406_NOT_ACCEPTABLE)
                 
-                productSZ.save()
-                productImageSZ.save()
-                if pv_one:
-                    pv_one.save()
-                if pv_two:
-                    pv_two.save()
-                if pv_three:
-                    pv_three.save()
-                product_varient_price.save()
-        else:
-            return Response("Inavlid Product Varient data", status=status.HTTP_406_NOT_ACCEPTABLE)
+                try:
+                    productSZ.save()
+                    productImageSZ.save()
+                    if pv_one:
+                        pv_one.save()
+                    if pv_two:
+                        pv_two.save()
+                    if pv_three:
+                        pv_three.save()
+                    product_varient_price.save()
+                except Exception as msg :
+                    return Response({"error":msg.args[0]}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        return Response("Successfully created", status=status.HTTP_201_CREATED)
-        
+        else:
+            return Response({"error":"Inavlid Product Varient data"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        return Response({"error":"Successfully created"}, status=status.HTTP_201_CREATED)
+
+
+class UpdateProduct(APIView):
+
+    def post(self, request, pk):
+        # validity check
+        product = get_object_or_None(Product, pk=pk)
+        if not product:
+            return Response({"error":"product not found"}, status=status.HTTP_404_NOT_FOUND)
+        data = request.data
+
+        # product data update
+        productData = data.pop('product')
+        if productData:
+            product.title = productData.get('title')
+            product.sku = productData.get('sku')
+            product.description = productData.get('description')
+            try:
+                product.clean()
+                product.save()
+            except Exception as msg :
+                return Response({"error":msg.args[0]}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        # price and stock data update
+        if data.get('product_variants_price'):
+            for pvp in data.get('product_variants_price'):
+                obj = get_object_or_None(ProductVariantPrice, pk=pvp.get('pk'), product=product)
+                if not obj:
+                    return Response({"error":"Inavlid product_variants_price data, Object not found"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                price = pvp.get('price')
+                stock = pvp.get('stock')
+                try:
+                    price = int(price)
+                    stock = int(stock)
+                except:
+                    return Response({"error":"Inavlid price or stock data, only int value acceptable"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                
+
+                obj.price = price
+                obj.stock = stock
+                try:
+                    obj.clean()
+                    obj.save()
+                except Exception as msg :
+                    return Response({"error":msg.args[0]}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(f"Successfully Updated {pk}", status=status.HTTP_201_CREATED)
+

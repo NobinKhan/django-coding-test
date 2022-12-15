@@ -18,9 +18,9 @@ class VariantView(BaseVariantView, ListView):
 
     def get_queryset(self):
         filter_string = {}
-        print(self.request.GET)
         for key in self.request.GET:
             if self.request.GET.get(key):
+                print(self.request.GET.get(key))
                 filter_string[key] = self.request.GET.get(key)
         return Variant.objects.filter(**filter_string)
 

@@ -4,6 +4,7 @@
 
 {% block content %}
 {% load humanize %}
+{% load page %}
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Products</h1>
     </div>
@@ -55,7 +56,7 @@
                     </thead>
 
                     <tbody>
-                    {% for product in products %}
+                    {% for product in page_obj %}
 
                     <tr>
                         <td>{{ product.pk }}</td>
@@ -95,12 +96,46 @@
         <div class="card-footer">
             <div class="row justify-content-between">
                 <div class="col-md-6">
-                    <p>Showing 1 to 10 out of 100</p>
+                    <p>Showing {{ page_obj.number|start:page_obj.paginator.per_page }} to {{ page_obj.number|end:page_obj.paginator.per_page }} out of {{ page_obj.paginator.count }}</p>
                 </div>
                 <div class="col-md-2">
-
                 </div>
             </div>
+            {{ data }}
+        </div>
+        <div class="card-footer">
+            <span class="row justify-content-between">
+                <div class="col-md-6">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+        
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+        
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </div>
+            </span>
+        </div>
+        <div class="card-footer">
+            <span class="row justify-content-between">
+                <div class="col-md-6">
+                    {% for page_number in page_obj.paginator.get_elided_page_range %}
+                    {% if page_number == page_obj.paginator.ELLIPSIS %}
+                    {{ page_number }}
+                    {% else %}
+                    <a href="?page={{ page_number }}"
+                        class="{% if page_number == page_obj.number %}current{% endif %}">
+                    {{page_number}}</a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </span>
         </div>
     </div>
 {% endblock %}

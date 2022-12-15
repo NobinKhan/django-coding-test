@@ -1,10 +1,7 @@
 from django.urls import path
-from django.views.generic import TemplateView
-from django.db.models import F, ExpressionWrapper, Q, Subquery, Prefetch
-from rest_framework import serializers
-from product.views.product import CreateProductView
+
+from product.views.product import CreateProductView, ProductView
 from product.views.variant import VariantView, VariantCreateView, VariantEditView
-from product.models import  Product, ProductVariantPrice
 
 app_name = "product"
 
@@ -18,11 +15,13 @@ urlpatterns = [
 
     # Products URLs
     path('create/', CreateProductView.as_view(), name='create.product'),
-    path('list/', TemplateView.as_view(
-        template_name='products/list.html', 
-        extra_context={
-            'products': Product.objects.prefetch_related('ProductVariantPrice'),
-        }
-    ), name='list.product'),
+    path('list/', ProductView.as_view(), name='list.product'),
+    # path('list/', TemplateView.as_view(
+    #     template_name='products/list.html', 
+    #     extra_context={
+    #         'products': Product.objects.prefetch_related('ProductVariantPrice'),
+    #         'paginators': Paginator(Product.objects.prefetch_related('ProductVariantPrice'), per_page=2),
+    #     }
+    # ), name='list.product'),
 ]
 

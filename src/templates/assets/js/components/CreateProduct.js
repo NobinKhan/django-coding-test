@@ -4,6 +4,7 @@ import 'react-tagsinput/react-tagsinput.css';
 import Dropzone from 'react-dropzone'
 
 
+
 const CreateProduct = (props) => {
 
     const [productVariantPrices, setProductVariantPrices] = useState([])
@@ -78,6 +79,24 @@ const CreateProduct = (props) => {
     let saveProduct = (event) => {
         event.preventDefault();
         // TODO : write your code here to save the product
+        try {
+            const requestData = {
+              method: 'POST',
+              headers:{
+                 'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(this.state)
+            };
+      
+            const response = fetch('http://localhost:5000/results', requestData);
+            const data = response.json();
+      
+            // redirect
+            this.props.history.push('/thank-you');
+          
+           } catch (error) {
+              console.log(error);
+           }
     }
 
 
@@ -90,15 +109,15 @@ const CreateProduct = (props) => {
                             <div className="card-body">
                                 <div className="form-group">
                                     <label htmlFor="">Product Name</label>
-                                    <input type="text" placeholder="Product Name" className="form-control"/>
+                                    <input type="text" name='productname' placeholder="Product Name" className="form-control"/>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="">Product SKU</label>
-                                    <input type="text" placeholder="Product Name" className="form-control"/>
+                                    <input type="text" name='productsku' placeholder="Product SKU" className="form-control"/>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="">Description</label>
-                                    <textarea id="" cols="30" rows="4" className="form-control"></textarea>
+                                    <textarea id="" cols="30" rows="4" name='productdes' className="form-control"></textarea>
                                 </div>
                             </div>
                         </div>

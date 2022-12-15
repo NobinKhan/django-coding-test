@@ -1,13 +1,14 @@
 import React, {useState} from 'react';
 import TagsInput from 'react-tagsinput';
 import 'react-tagsinput/react-tagsinput.css';
-import Dropzone from 'react-dropzone'
-
+import Dropzone from 'react-dropzone';
+import axios from 'axios'
 
 
 const CreateProduct = (props) => {
 
     const [productVariantPrices, setProductVariantPrices] = useState([])
+    const [counter, setCounter] = useState(3515212)
 
     const [productVariants, setProductVariant] = useState([
         {
@@ -76,32 +77,68 @@ const CreateProduct = (props) => {
     }
 
     // Save product
+    const responseBody = {};
     let saveProduct = (event) => {
         event.preventDefault();
         // TODO : write your code here to save the product
-        try {
-            const requestData = {
-              method: 'POST',
-              headers:{
-                 'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(this.state)
-            };
-      
-            const response = fetch('http://localhost:5000/results', requestData);
-            const data = response.json();
-      
-            // redirect
-            this.props.history.push('/thank-you');
-          
-           } catch (error) {
-              console.log(error);
-           }
+        const formData = new FormData(event.currentTarget);
+        formData.forEach((value, property) => responseBody[property] = value);
+        let count = setCounter(counter + 1)
+        console.log(count)
+        let product = {
+            "product":{
+                "title": "dfdfvdsfdfv",
+                "sku": "HoldedOrders",
+                "description": "820zsdfvkjnjnzdflkjfjknjknl"
+            },
+            "product_image": "google.com",
+            "product_variants": [
+                {
+                    "product_variant_one": {
+                        "variant": "Size",
+                        "variant_title":"x" 
+                    },
+                    "product_variant_two": {
+                        "variant": "Color",
+                        "variant_title":"blue" 
+                    },
+                    "price": 200,
+                    "stock": 500
+                },
+                {
+                    "product_variant_one": {
+                        "variant": "Size",
+                        "variant_title":"x" 
+                    },
+                    "product_variant_two": {
+                        "variant": "Color",
+                        "variant_title":"blue" 
+                    },
+                    "product_variant_three": {
+                        "variant": "Style",
+                        "variant_title":"round" 
+                    },
+                    "price": 410,
+                    "stock": 5000
+                }
+            ]
+            
+        } // postman data
+        console.log(JSON.stringify(product));
+    
+        axios.post('/product/create/', product).then(response => {
+        console.log(response.data);
+        }).catch(error => {
+        console.log(error.message);
+        })
+    
     }
 
 
     return (
         <div>
+            <form onSubmit={saveProduct}>
+            
             <section>
                 <div className="row">
                     <div className="col-md-6">
@@ -109,15 +146,15 @@ const CreateProduct = (props) => {
                             <div className="card-body">
                                 <div className="form-group">
                                     <label htmlFor="">Product Name</label>
-                                    <input type="text" name='productname' placeholder="Product Name" className="form-control"/>
+                                    <input type="text" name='productname' id='productname' placeholder="Product Name" className="form-control"/>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="">Product SKU</label>
-                                    <input type="text" name='productsku' placeholder="Product SKU" className="form-control"/>
+                                    <input type="text" name='productsku' id='productsku' placeholder="Product SKU" className="form-control"/>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="">Description</label>
-                                    <textarea id="" cols="30" rows="4" name='productdes' className="form-control"></textarea>
+                                    <textarea id="productdes" cols="30" rows="4" name='productdes' className="form-control"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -234,9 +271,10 @@ const CreateProduct = (props) => {
                     </div>
                 </div>
 
-                <button type="button" onClick={saveProduct} className="btn btn-lg btn-primary">Save</button>
+                <input type="submit" className="btn btn-lg btn-primary"/>
                 <button type="button" className="btn btn-secondary btn-lg">Cancel</button>
             </section>
+            </form>
         </div>
     );
 };
